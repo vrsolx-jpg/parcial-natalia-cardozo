@@ -1,0 +1,7 @@
+{
+  "name": "gestion-ordenes",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}

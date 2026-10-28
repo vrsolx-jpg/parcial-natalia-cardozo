@@ -1,0 +1,51 @@
+.dashboard {
+  width: min(100%, 1100px);
+  margin: 0 auto;
+}
+
+.metrics,
+.filter-grid {
+  padding: 0;
+}
+
+.metric-card {
+  height: calc(100% - 16px);
+  margin: 8px 0;
+}
+
+.metric-card ion-card-title {
+  font-size: 1.8rem;
+}
+
+ion-avatar {
+  display: grid;
+  place-items: center;
+  background: var(--ion-color-primary-tint);
+  color: var(--ion-color-primary-contrast);
+  font-weight: 700;
+}
+
+ion-badge {
+  margin-inline-start: 8px;
+}
+
+.state-message {
+  padding: 8px 16px;
+}
+
+.data-note {
+  display: block;
+  margin: 16px 8px;
+}
+
+.observation {
+  margin: 20px 8px;
+  white-space: pre-line;
+}
+
+ion-modal {
+  --width: min(92%, 540px);
+  --height: fit-content;
+  --max-height: 85%;
+  --border-radius: 16px;
+}

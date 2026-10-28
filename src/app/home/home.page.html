@@ -1,0 +1,167 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Portal de calificaciones</ion-title>
+    <ion-buttons slot="end">
+      <ion-button aria-label="Actualizar calificaciones" [disabled]="cargando" (click)="cargarCalificaciones()">
+        Actualizar
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <main class="dashboard">
+    @if (cargando) {
+    <p class="state-message" role="status">Cargando calificaciones...</p>
+    } @if (errorCarga) {
+    <ion-text color="danger">
+      <p class="state-message" role="alert">{{ errorCarga }}</p>
+    </ion-text>
+    }
+
+    <ion-grid class="metrics">
+      <ion-row>
+        <ion-col size="12" size-md="6">
+          <ion-card class="metric-card">
+            <ion-card-header>
+              <ion-card-subtitle>Promedio de los resultados</ion-card-subtitle>
+              <ion-card-title>{{ promedio | number:'1.1-1' }} / 5.0</ion-card-title>
+            </ion-card-header>
+            <ion-card-content> Calculado en tiempo real para los registros visibles. </ion-card-content>
+          </ion-card>
+        </ion-col>
+        <ion-col size="12" size-md="6">
+          <ion-card class="metric-card">
+            <ion-card-header>
+              <ion-card-subtitle>Estudiantes aprobados</ion-card-subtitle>
+              <ion-card-title>{{ cantidadAprobados }} / {{ calificacionesFiltradas.length }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content> Aprobación con nota igual o superior a 3.0. </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Buscar y filtrar</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-grid class="filter-grid">
+          <ion-row>
+            <ion-col size="12" size-md="6">
+              <ion-searchbar
+                aria-label="Buscar estudiante"
+                placeholder="Buscar por estudiante o correo"
+                [(ngModel)]="busqueda"
+                [debounce]="0"
+              >
+              </ion-searchbar>
+            </ion-col>
+            <ion-col size="12" size-md="3">
+              <ion-item>
+                <ion-select label="Asignatura" labelPlacement="stacked" [(ngModel)]="asignaturaSeleccionada">
+                  <ion-select-option value="Todas">Todas</ion-select-option>
+                  @for (asignatura of asignaturas; track asignatura) {
+                  <ion-select-option [value]="asignatura"> {{ asignatura }} </ion-select-option>
+                  }
+                </ion-select>
+              </ion-item>
+            </ion-col>
+            <ion-col size="12" size-md="3">
+              <ion-item [class.ion-invalid]="notaMinimaInvalida">
+                <ion-input
+                  label="Nota mínima (1.0–5.0)"
+                  labelPlacement="stacked"
+                  type="number"
+                  min="1"
+                  max="5"
+                  step="0.1"
+                  [(ngModel)]="notaMinima"
+                >
+                </ion-input>
+              </ion-item>
+              @if (notaMinimaInvalida) {
+              <ion-note color="danger"> Ingresa una nota entre 1.0 y 5.0. </ion-note>
+              }
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+        <ion-button fill="clear" (click)="limpiarFiltros()"> Limpiar filtros </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Calificaciones</ion-card-title>
+        <ion-card-subtitle> {{ calificacionesFiltradas.length }} registros </ion-card-subtitle>
+      </ion-card-header>
+      @if (calificacionesFiltradas.length > 0) {
+      <ion-list>
+        @for (calificacion of calificacionesFiltradas; track calificacion.id) {
+        <ion-item button detail (click)="abrirModal(calificacion)">
+          <ion-avatar slot="start" aria-hidden="true">
+            <span>{{ iniciales(calificacion.estudiante) }}</span>
+          </ion-avatar>
+          <ion-label class="ion-text-wrap">
+            <h2>{{ calificacion.estudiante }}</h2>
+            <p>{{ calificacion.correo }}</p>
+            <p>{{ calificacion.asignatura }} · Nota: {{ calificacion.nota | number:'1.1-1' }}</p>
+          </ion-label>
+          <ion-badge slot="end" [color]="calificacion.estado === 'Aprobada' ? 'success' : 'danger'">
+            {{ calificacion.estado }}
+          </ion-badge>
+        </ion-item>
+        }
+      </ion-list>
+      } @else if (!cargando) {
+      <ion-card-content>
+        <p class="state-message">
+          {{ notaMinimaInvalida ? 'Corrige la nota mínima para ver resultados.' : 'No hay calificaciones que coincidan
+          con los filtros.' }}
+        </p>
+      </ion-card-content>
+      }
+    </ion-card>
+   
+  </main>
+
+  <ion-modal [isOpen]="modalAbierto" (didDismiss)="cerrarModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Detalle de calificación</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="cerrarModal()">Cerrar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        @if (calificacionSeleccionada; as calificacion) {
+        <h2>{{ calificacion.estudiante }}</h2>
+        <p>{{ calificacion.correo }}</p>
+        <ion-item>
+          <ion-label>Asignatura</ion-label>
+          <ion-note slot="end">{{ calificacion.asignatura }}</ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>Nota final</ion-label>
+          <ion-note slot="end" [color]="calificacion.estado === 'Aprobada' ? 'success' : 'danger'">
+            {{ calificacion.nota | number:'1.1-1' }} / 5.0
+          </ion-note>
+        </ion-item>
+        <ion-item>
+          <ion-label>Estado</ion-label>
+          <ion-badge slot="end" [color]="calificacion.estado === 'Aprobada' ? 'success' : 'danger'">
+            {{ calificacion.estado }}
+          </ion-badge>
+        </ion-item>
+        <p class="observation">{{ calificacion.observacion }}</p>
+        <ion-button expand="block" [disabled]="calificacion.revisada" (click)="confirmarRevision()">
+          {{ calificacion.revisada ? 'Revisión completada' : 'Marcar como revisada' }}
+        </ion-button>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

@@ -1,0 +1,6 @@
+/* El componente principal ocupa toda la pantalla. */
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
